@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.11.0/xterm.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.11.0/xterm.js"></script>
+    <title>Docker Terminal</title>
+</head>
+<body>
+<section class="section">
+    <div class="container">
+        <h1 class="title">
+            Docker Terminal
+        </h1>
+        <p class="subtitle">
+            A simple Docker exec terminal.
+        </p>
+    </div>
+    <br/>
+    <div id="terminal-container" class="container" style="padding: 10px; background: #000; border-radius: 5px">
+        <div id="terminal"></div>
+    </div>
+    <div id="selection-message" class="container has-text-centered">
+        <div class="field">
+            <p class="control has-icons-left has-icons-right">
+                <input id="input-id" class="input" type="text" placeholder="Container Name or ID">
+                <span class="icon is-small is-left">
+                    <i class="fab fa-docker"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-link" onclick="submit()">Submit</button>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="content has-text-centered">
+        <p>
+            <strong>Docker Terminal</strong> by <a target="_blank" href="https://github.com/speza">Sam Perrin</a>
+        </p>
+    </div>
+</section>
+<script>
+  var term = new Terminal();
+
+  var submit = function () {
+    var value = document.getElementById("input-id").value;
+    if (value !== undefined && value !== "") {
+      window.location.replace(window.location.href + "?id=" + value)
+    }
+  };
+
+  var qps = new URLSearchParams(window.location.search);
+  var id = qps.get('id');
+  var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/exec/" + id);
+
+  if (id == null) {
+    document.getElementById("terminal-container").style.display = 'none';
+    document.getElementById("selection-message").style.display = 'block';
+  } else {
+    document.getElementById("terminal-container").style.display = 'block';
+    document.getElementById("selection-message").style.display = 'none';
+    websocket.onopen = function () {
+      term.on('data', function (data) {
+        websocket.send(data);
+      });
+
+      term.on('title', function (title) {
+        document.title = title;
+      });
+
+      term.open(document.getElementById('terminal'));
+      websocket.onmessage = function (evt) {
+        term.write(evt.data);
+      };
+
+      websocket.onclose = function () {
+        term.dispose();
+      };
+    }
+  }
+</script>
+</body>
+</html>
