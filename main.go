@@ -48,30 +48,27 @@ func ExecContainer(ws *websocket.Conn) {
 	})
 	defer hijackedResponse.Close()
 
-	var receiveStdout chan error
+	var errorChan chan error
 
-	go func() (err error) {
-		if ws != nil {
-			io.Copy(ws, hijackedResponse.Reader)
+	go func() {
+		_, err := io.Copy(ws, hijackedResponse.Reader)
+		if err != nil {
+			errorChan <- err
 		}
-		return err
 	}()
 
-	go func() error {
-		io.Copy(hijackedResponse.Conn, ws)
-		if conn, ok := hijackedResponse.Conn.(interface {
-			CloseWrite() error
-		}); ok {
-			if err := conn.CloseWrite(); err != nil {
-			}
+	go func() {
+		_, err := io.Copy(hijackedResponse.Conn, ws)
+		if err != nil {
+			errorChan <- err
 		}
-		return nil
+		err = hijackedResponse.CloseWrite()
+		if err != nil {
+			errorChan <- err
+		}
 	}()
 
-	if err := <-receiveStdout; err != nil {
+	if err := <-errorChan; err != nil {
 		log.Println(err)
 	}
-
-	log.Println("connection established")
-	log.Println(ws)
 }
