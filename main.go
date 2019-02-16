@@ -12,7 +12,7 @@ import (
 
 func main() {
 	http.Handle("/exec/", websocket.Handler(ExecContainer))
-	http.Handle("/", http.FileServer(http.Dir("./")))
+	http.Handle("/", http.FileServer(http.Dir("./client")))
 
 	log.Printf("starting on port: 8080")
 
