@@ -50,12 +50,12 @@
 
   var qps = new URLSearchParams(window.location.search);
   var id = qps.get('id');
-  var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/exec/" + id);
 
   if (id == null) {
     document.getElementById("terminal-container").style.display = 'none';
     document.getElementById("selection-message").style.display = 'block';
   } else {
+    var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/exec/" + id);
     document.getElementById("terminal-container").style.display = 'block';
     document.getElementById("selection-message").style.display = 'none';
     websocket.onopen = function () {
