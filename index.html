@@ -21,6 +21,7 @@
     <br/>
     <div id="terminal-container" class="container" style="padding: 10px; background: #000; border-radius: 5px">
         <div id="terminal"></div>
+        <a class="button is-danger" onclick="exit()" style="margin-top: 5px">Exit</a>
     </div>
     <div id="selection-message" class="container has-text-centered">
         <div class="field">
@@ -46,13 +47,6 @@
 </section>
 <script>
   var term = new Terminal();
-
-  var submit = function () {
-    var value = document.getElementById("input-id").value;
-    if (value !== undefined && value !== "") {
-      window.location.replace(window.location.href + "?id=" + value)
-    }
-  };
 
   var qps = new URLSearchParams(window.location.search);
   var id = qps.get('id');
@@ -82,6 +76,18 @@
         term.dispose();
       };
     }
+  }
+
+  function submit() {
+    var value = document.getElementById("input-id").value;
+    if (value !== undefined && value !== "") {
+      window.location.replace(window.location.href + "?id=" + value)
+    }
+  }
+
+  function exit() {
+    websocket.close();
+    window.location.replace("/");
   }
 </script>
 </body>
